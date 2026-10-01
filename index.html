@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex,nofollow">
+<title>Portfolio admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter+Tight:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0c0f;--panel:#14161b;--panel2:#1b1e25;--line:#262932;--ink:#ece8e1;--mute:#8b8e98;--acc:#b4a1ff;--red:#ff7a7a;--ok:#7be0a5}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 "Inter Tight",system-ui,sans-serif;min-height:100vh}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+h1,h2{font-family:"Instrument Serif",serif;font-weight:400;letter-spacing:-.02em}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:8px 14px;font-weight:500}
+.btn:hover{border-color:var(--mute)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#14112b}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.bad{color:var(--red)}
+.btn.bad:hover{border-color:var(--red)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sm{padding:5px 10px;font-size:.85rem}
+/* login */
+#login{max-width:460px;margin:8vh auto;padding:0 18px}
+#login h1{font-size:3rem;line-height:1}
+#login p.lead{color:var(--mute);margin:8px 0 22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+label{display:block;font-size:.85rem;color:var(--mute);margin:14px 0 5px}
+input[type=text],input[type=password],select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.row2{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.chk{display:flex;gap:8px;align-items:center;color:var(--mute);margin-top:14px;font-size:.9rem}
+details{margin-top:18px;color:var(--mute);font-size:.9rem}
+details summary{cursor:pointer;color:var(--ink)}
+details ol{padding-left:20px;margin-top:8px}
+details li{margin:4px 0}
+#err{color:var(--red);margin-top:12px;min-height:1.2em}
+/* app */
+header.top{position:sticky;top:0;z-index:20;display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px clamp(14px,3vw,32px);background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top h1{font-size:1.7rem;margin-right:auto}
+header.top h1 small{font:500 .85rem "Inter Tight",sans-serif;color:var(--mute);margin-left:10px;letter-spacing:0}
+main{padding:18px clamp(14px,3vw,32px) 80px;max-width:1400px;margin:0 auto}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.crumbs{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-right:auto;font-weight:500}
+.crumbs button{background:none;border:0;color:var(--mute);padding:4px 6px;border-radius:6px}
+.crumbs button:hover{color:var(--ink);background:var(--panel)}
+.crumbs button:last-child{color:var(--ink)}
+.crumbs i{color:var(--line);font-style:normal}
+#selbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;margin-bottom:14px;background:var(--panel2);border:1px solid var(--acc);border-radius:10px}
+#selbar span{margin-right:auto}
+#drop{min-height:50vh;border:2px dashed transparent;border-radius:14px;padding:4px;transition:border-color .2s,background .2s}
+#drop.over{border-color:var(--acc);background:rgba(180,161,255,.07)}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.it{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.it.sel{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc)}
+.it .pick{position:absolute;top:10px;left:10px;z-index:2;width:20px;height:20px;accent-color:var(--acc)}
+.thumb{display:block;aspect-ratio:4/3;background:var(--bg);width:100%;border:0;padding:0;position:relative}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb.dir{display:flex;align-items:center;justify-content:center;color:var(--acc)}
+.thumb.dir svg{width:64px;height:64px}
+.meta{padding:10px 12px 6px}
+.meta b{display:block;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meta small{color:var(--mute)}
+.acts{display:flex;flex-wrap:wrap;gap:6px;padding:4px 12px 12px}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:60px 10px}
+/* modals */
+.ov{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(5,5,7,.8);padding:18px}
+.dlg{width:min(480px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px}
+.dlg h2{font-size:1.8rem;line-height:1.1;margin-bottom:8px}
+.dlg p{color:var(--mute);white-space:pre-line}
+.dlg input,.dlg select{margin-top:14px}
+.dlg .bt{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.ed{width:min(980px,100%);max-height:94vh;overflow:auto}
+.ed .cv{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;margin:12px 0}
+.ed canvas{max-width:100%;max-height:52vh}
+.ed .opts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ed .opts select{width:auto;margin:0}
+#busy{z-index:80;flex-direction:column;gap:14px;color:var(--ink)}
+.spin{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;background:var(--panel2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;max-width:92vw;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.err{border-color:var(--red);color:var(--red)}
+#toast.ok{border-color:var(--ok)}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <h1>Portfolio admin</h1>
+  <p class="lead">Upload, organise, edit and delete the photos on your portfolio site. Changes are saved straight to your GitHub repository.</p>
+  <form class="card" id="lf" autocomplete="off">
+    <label for="repo">Repository (owner/name)</label>
+    <div class="row2">
+      <input type="text" id="repo" value="siddhartha018/portfolio" required>
+      <input type="text" id="branch" value="main" aria-label="Branch" required>
+    </div>
+    <label for="tok">GitHub access token</label>
+    <input type="password" id="tok" placeholder="github_pat_..." required>
+    <label class="chk"><input type="checkbox" id="rem"> Keep me signed in on this device</label>
+    <button class="btn pri" style="width:100%;margin-top:18px" id="go">Connect</button>
+    <div id="err" role="alert"></div>
+    <details>
+      <summary>How do I get a token?</summary>
+      <ol>
+        <li>Open GitHub, then Settings, Developer settings, Fine-grained tokens, Generate new token.</li>
+        <li>Under Repository access, choose only your portfolio repository.</li>
+        <li>Under Permissions, set Contents to Read and write.</li>
+        <li>Generate the token, copy it and paste it above.</li>
+      </ol>
+      <p style="margin-top:8px">The token stays in this browser and is only sent to api.github.com. Never save it inside the repository.</p>
+    </details>
+  </form>
+</section>
+
+<div id="app" hidden>
+  <header class="top">
+    <h1>Portfolio admin <small id="rinfo"></small></h1>
+    <a class="btn" id="site" target="_blank" rel="noopener">Open site</a>
+    <button class="btn" id="refresh">Refresh</button>
+    <button class="btn" id="logout">Sign out</button>
+  </header>
+  <main>
+    <div class="tools">
+      <nav class="crumbs" id="crumbs" aria-label="Folder path"></nav>
+      <label class="chk" style="margin:0"><input type="checkbox" id="all"> Select all</label>
+      <button class="btn" id="newdir">New folder</button>
+      <button class="btn pri" id="up">Upload photos</button>
+      <input type="file" id="file" accept="image/*" multiple hidden>
+    </div>
+    <div id="selbar" hidden>
+      <span id="selcount"></span>
+      <button class="btn sm" id="bmove">Move</button>
+      <button class="btn sm bad" id="bdel">Delete</button>
+      <button class="btn sm" id="bclr">Clear</button>
+    </div>
+    <div id="drop"><div id="grid"></div></div>
+  </main>
+</div>
+
+<div class="ov" id="busy" hidden><div class="spin"></div><div id="busyt">Working…</div></div>
+<div id="toast" hidden></div>
+
+<script>
+const ROOT="images";
+const IMG=/\.(jpe?g|png|gif|webp|avif|svg|bmp)$/i, EDITABLE=/\.(jpe?g|png|webp)$/i;
+const $=id=>document.getElementById(id);
+const S={owner:"",repo:"",branch:"main",token:"",blobs:[],dir:ROOT,sel:new Set()};
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+const base=p=>p.slice(p.lastIndexOf("/")+1), parent=p=>p.slice(0,p.lastIndexOf("/"));
+const kb=n=>n>1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB";
+const nat=(a,b)=>a.localeCompare(b,undefined,{numeric:true,sensitivity:"base"});
+
+/* ---------- GitHub API ---------- */
+async function api(path,opt={}){
+  const r=await fetch(`https://api.github.com/repos/${S.owner}/${S.repo}/${path}`,{
+    method:opt.method||"GET",cache:"no-store",
+    headers:{Accept:"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28",Authorization:"Bearer "+S.token,...(opt.body?{"Content-Type":"application/json"}:{})},
+    body:opt.body?JSON.stringify(opt.body):undefined});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){
+    let m=j.message||("Error "+r.status);
+    if(r.status===401)m="The token is invalid or expired.";
+    if(r.status===403||r.status===404)m+=" (check that the token has Contents: Read and write access to this repository)";
+    throw new Error(m);
+  }
+  return j;
+}
+async function loadTree(ref){
+  const t=await api(`git/trees/${encodeURIComponent(ref||S.branch)}?recursive=1`);
+  S.blobs=t.tree.filter(x=>x.type==="blob"&&x.path.startsWith(ROOT+"/")).map(x=>({path:x.path,sha:x.sha,size:x.size||0}));
+  if(t.truncated)toast("The repository is very large; the list may be incomplete.",1);
+  const known=new Set(S.blobs.map(b=>b.path));
+  S.sel=new Set([...S.sel].filter(k=>known.has(k.slice(2))||S.blobs.some(b=>b.path.startsWith(k.slice(2)+"/"))));
+  if(S.dir!==ROOT&&!S.blobs.some(b=>b.path.startsWith(S.dir+"/")))S.dir=ROOT;
+  render();
+}
+/* one commit for any set of changes: [{path, sha}] where sha:null deletes */
+async function commit(entries,message){
+  const ref=await api(`git/ref/heads/${S.branch}`);
+  const head=ref.object.sha;
+  const c=await api(`git/commits/${head}`);
+  const tree=await api("git/trees",{method:"POST",body:{base_tree:c.tree.sha,tree:entries.map(e=>({path:e.path,mode:"100644",type:"blob",sha:e.sha}))}});
+  const nc=await api("git/commits",{method:"POST",body:{message,tree:tree.sha,parents:[head]}});
+  await api(`git/refs/heads/${S.branch}`,{method:"PATCH",body:{sha:nc.sha}});
+  await loadTree(nc.sha);
+}
+const mkBlob=async(b64)=>(await api("git/blobs",{method:"POST",body:{content:b64,encoding:"base64"}})).sha;
+const toB64=blob=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(",")[1]);r.onerror=()=>rej(new Error("Could not read file"));r.readAsDataURL(blob)});
+const rawUrl=b=>`https://raw.githubusercontent.com/${S.owner}/${S.repo}/${S.branch}/`+b.path.split("/").map(encodeURIComponent).join("/")+"?v="+b.sha;
+
+/* ---------- UI helpers ---------- */
+let tt=0;
+function toast(m,err){const t=$("toast");t.textContent=m;t.className=err===1?"err":err===2?"ok":"";t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,err===1?7000:3500)}
+const ok=m=>toast(m,2);
+function busy(on,t){$("busy").hidden=!on;if(t)$("busyt").textContent=t}
+async function run(label,fn){
+  busy(true,label);
+  try{await fn();return true}catch(e){console.error(e);toast(e.message,1);return false}finally{busy(false)}
+}
+/* dialog: resolves to input/select value, true, or null when cancelled */
+function ask({title,text="",input,value="",select,okText="OK",danger}){
+  return new Promise(res=>{
+    const ov=el("div","ov"),d=el("div","dlg");d.setAttribute("role","dialog");d.setAttribute("aria-modal","true");
+    d.append(el("h2",null,title));if(text)d.append(el("p",null,text));
+    let f=null;
+    if(input){f=el("input");f.type="text";f.value=value;f.setAttribute("aria-label",title);d.append(f)}
+    if(select){f=el("select");select.forEach(o=>{const op=el("option",null,o.label);op.value=o.value;f.append(op)});d.append(f)}
+    const bt=el("div","bt"),c=el("button","btn","Cancel"),o=el("button","btn "+(danger?"bad":"pri"),okText);
+    c.type=o.type="button";bt.append(c,o);d.append(bt);ov.append(d);document.body.append(ov);
+    const done=v=>{document.removeEventListener("keydown",kd);ov.remove();res(v)};
+    const go=()=>done(f?f.value:true);
+    const kd=e=>{if(e.key==="Escape")done(null);if(e.key==="Enter"&&e.target.tagName!=="BUTTON")go()};
+    document.addEventListener("keydown",kd);
+    c.onclick=()=>done(null);o.onclick=go;ov.onmousedown=e=>{if(e.target===ov)done(null)};
+    (f||o).focus();if(f&&f.select)f.select();
+  });
+}
+const validName=n=>n&&n.trim()&&!/[\/\\]/.test(n)&&n.trim()!=="."&&n.trim()!==".."&&!n.trim().startsWith(".");
+
+/* ---------- derive current folder ---------- */
+function allDirs(){
+  const s=new Set([ROOT]);
+  S.blobs.forEach(b=>{let p=parent(b.path);while(p.length>=ROOT.length){s.add(p);p=parent(p)}});
+  return [...s].sort(nat);
+}
+function listing(){
+  const dirs=new Map(),files=[];
+  S.blobs.forEach(b=>{
+    if(!b.path.startsWith(S.dir+"/"))return;
+    const rest=b.path.slice(S.dir.length+1),i=rest.indexOf("/");
+    if(i>=0){
+      const n=rest.slice(0,i);if(!dirs.has(n))dirs.set(n,{name:n,path:S.dir+"/"+n,count:0,cover:null});
+      const d=dirs.get(n);
+      if(base(b.path)!==".gitkeep"){d.count++;if(!d.cover&&IMG.test(b.path))d.cover=b}
+    }else if(rest!==".gitkeep")files.push(b);
+  });
+  return {dirs:[...dirs.values()].sort((a,b)=>nat(a.name,b.name)),files:files.sort((a,b)=>nat(base(a.path),base(b.path)))};
+}
+
+/* ---------- render ---------- */
+const FOLDER='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>';
+function render(){
+  const cr=$("crumbs");cr.innerHTML="";
+  const parts=S.dir.split("/");
+  parts.forEach((p,i)=>{
+    if(i)cr.append(el("i",null,"/"));
+    const b=el("button",null,i===0?"All photos":p);b.onclick=()=>{S.dir=parts.slice(0,i+1).join("/");S.sel.clear();render()};cr.append(b);
+  });
+  const {dirs,files}=listing(),g=$("grid");g.innerHTML="";
+  if(!dirs.length&&!files.length)g.append(el("div","empty","This folder is empty. Drop photos here or press Upload photos."));
+  dirs.forEach(d=>{
+    const key="d|"+d.path,c=el("div","it"+(S.sel.has(key)?" sel":""));
+    c.append(pick(key));
+    const t=el("button","thumb dir");t.setAttribute("aria-label","Open folder "+d.name);
+    if(d.cover){const im=el("img");im.src=rawUrl(d.cover);im.alt="";im.loading="lazy";t.append(im)}else t.innerHTML=FOLDER;
+    t.onclick=()=>{S.dir=d.path;S.sel.clear();render()};
+    const m=el("div","meta");m.append(el("b",null,d.name),el("small",null,d.count+(d.count===1?" photo":" photos")));
+    const a=el("div","acts");
+    a.append(btn("Rename",()=>rename("d",d.path)),btn("Move",()=>move([{t:"d",p:d.path}])),btn("Delete",()=>del([{t:"d",p:d.path}]),1));
+    c.append(t,m,a);g.append(c);
+  });
+  files.forEach(f=>{
+    const key="f|"+f.path,n=base(f.path),c=el("div","it"+(S.sel.has(key)?" sel":""));
+    c.append(pick(key));
+    const t=el(IMG.test(n)?"a":"div","thumb");
+    if(IMG.test(n)){t.href=rawUrl(f);t.target="_blank";t.rel="noopener";t.setAttribute("aria-label","Open "+n);const im=el("img");im.src=rawUrl(f);im.alt=n;im.loading="lazy";t.append(im)}
+    else{t.classList.add("dir");t.append(el("span",null,"File"))}
+    const m=el("div","meta");m.append(el("b",null,n),el("small",null,kb(f.size)));m.firstChild.title=n;
+    const a=el("div","acts");
+    if(EDITABLE.test(n))a.append(btn("Edit",()=>editImg(f)));
+    a.append(btn("Rename",()=>rename("f",f.path)),btn("Move",()=>move([{t:"f",p:f.path}])),btn("Delete",()=>del([{t:"f",p:f.path}]),1));
+    c.append(t,m,a);g.append(c);
+  });
+  const n=S.sel.size;$("selbar").hidden=!n;$("selcount").textContent=n+(n===1?" item selected":" items selected");
+  $("all").checked=n>0&&n===dirs.length+files.length;
+}
+function btn(t,fn,bad){const b=el("button","btn sm"+(bad?" bad":""),t);b.onclick=fn;return b}
+function pick(key){
+  const c=el("input","pick");c.type="checkbox";c.checked=S.sel.has(key);c.setAttribute("aria-label","Select");
+  c.onchange=()=>{c.checked?S.sel.add(key):S.sel.delete(key);render()};return c;
+}
+const selItems=()=>[...S.sel].map(k=>({t:k[0],p:k.slice(2)}));
+
+/* ---------- operations ---------- */
+const under=p=>S.blobs.filter(b=>b.path.startsWith(p+"/"));
+function pairsFor(item,to){return item.t==="f"?[{b:S.blobs.find(x=>x.path===item.p),to}]:under(item.p).map(b=>({b,to:to+b.path.slice(item.p.length)}))}
+async function relocate(pairs,msg){
+  const from=new Set(pairs.map(p=>p.b.path)),have=new Set(S.blobs.map(b=>b.path));
+  const clash=pairs.find(p=>p.b.path!==p.to&&have.has(p.to)&&!from.has(p.to));
+  if(clash){toast(`"${base(clash.to)}" already exists at the destination.`,1);return}
+  const moves=pairs.filter(p=>p.b.path!==p.to);if(!moves.length)return;
+  const entries=[...moves.map(p=>({path:p.b.path,sha:null})),...moves.map(p=>({path:p.to,sha:p.b.sha}))];
+  if(await run("Saving changes…",()=>commit(entries,msg)))ok("Done");
+}
+async function rename(t,path){
+  const old=base(path),n=await ask({title:t==="d"?"Rename folder":"Rename photo",input:true,value:old,okText:"Rename"});
+  if(n===null||n.trim()===old)return;
+  if(!validName(n))return toast("Use a name without slashes and not starting with a dot.",1);
+  relocate(pairsFor({t,p:path},parent(path)+"/"+n.trim()),`Rename ${old} to ${n.trim()}`);
+}
+async function move(items){
+  const bad=new Set();items.forEach(i=>{if(i.t==="d"){bad.add(i.p);allDirs().forEach(d=>{if(d.startsWith(i.p+"/"))bad.add(d)})}});
+  const opts=allDirs().filter(d=>!bad.has(d)&&!items.every(i=>parent(i.p)===d)).map(d=>({value:d,label:d===ROOT?"All photos (top level)":d.slice(ROOT.length+1)}));
+  if(!opts.length)return toast("There is no other folder to move to. Create one first.",1);
+  const dest=await ask({title:"Move to folder",text:`Move ${items.length} item${items.length>1?"s":""} to:`,select:opts,okText:"Move"});
+  if(dest===null)return;
+  relocate(items.flatMap(i=>pairsFor(i,dest+"/"+base(i.p))),`Move ${items.length} item(s) to ${dest}`);
+}
+async function del(items){
+  const list=items.flatMap(i=>i.t==="f"?[S.blobs.find(b=>b.path===i.p)]:under(i.p));
+  const nPhotos=list.filter(b=>base(b.path)!==".gitkeep").length;
+  const v=await ask({title:"Delete permanently?",text:`${items.length} item${items.length>1?"s":""} (${nPhotos} file${nPhotos===1?"":"s"}) will be removed from the repository. It can still be recovered from the GitHub history.`,okText:"Delete",danger:true});
+  if(!v)return;
+  S.sel.clear();
+  if(await run("Deleting…",()=>commit(list.map(b=>({path:b.path,sha:null})),`Delete ${items.length} item(s)`)))ok("Deleted");
+}
+async function newFolder(){
+  const n=await ask({title:"New folder",text:"Folders become categories on your portfolio.",input:true,placeholder:"e.g. Travel",okText:"Create"});
+  if(n===null)return;
+  if(!validName(n))return toast("Use a name without slashes and not starting with a dot.",1);
+  const path=`${S.dir}/${n.trim()}`;
+  if(S.blobs.some(b=>b.path.startsWith(path+"/")))return toast("That folder already exists.",1);
+  if(await run("Creating folder…",async()=>{const sha=await mkBlob("");await commit([{path:path+"/.gitkeep",sha}],`Create folder ${n.trim()}`)})){ok("Folder created");S.dir=path;render()}
+}
+async function upload(list){
+  const files=[...list].filter(f=>IMG.test(f.name));
+  if(files.length<list.length)toast("Skipped files that are not images.",1);
+  if(!files.length)return;
+  const names=files.map(f=>f.name.replace(/[\/\\]/g,"_").replace(/^\.+/,"")||"photo.jpg");
+  const have=new Set(S.blobs.map(b=>b.path)),dup=names.filter(n=>have.has(S.dir+"/"+n));
+  if(dup.length&&!await ask({title:"Replace existing photos?",text:dup.slice(0,6).join("\n")+(dup.length>6?`\n…and ${dup.length-6} more`:"")+"\n\nThese names already exist here and will be replaced.",okText:"Replace",danger:true}))return;
+  if(await run("Uploading…",async()=>{
+    const entries=[];
+    for(let i=0;i<files.length;i++){
+      $("busyt").textContent=`Uploading ${i+1} of ${files.length}…`;
+      entries.push({path:`${S.dir}/${names[i]}`,sha:await mkBlob(await toB64(files[i]))});
+    }
+    $("busyt").textContent="Saving…";
+    await commit(entries,`Upload ${files.length} photo(s) to ${S.dir}`);
+  }))ok(`Uploaded ${files.length} photo${files.length>1?"s":""}`);
+}
+
+/* ---------- image editor (rotate, flip, resize, compress) ---------- */
+function editImg(f){
+  const n=base(f.path),ext=n.split(".").pop().toLowerCase(),mime=ext==="png"?"image/png":ext==="webp"?"image/webp":"image/jpeg";
+  const ov=el("div","ov"),d=el("div","dlg ed");d.append(el("h2",null,"Edit "+n));
+  const cv=el("div","cv"),canvas=el("canvas");cv.append(canvas);
+  const o=el("div","opts");
+  const sz=el("select");[["0","Original size"],["2560","Max 2560 px"],["1920","Max 1920 px"],["1280","Max 1280 px"]].forEach(([v,l])=>{const x=el("option",null,l);x.value=v;sz.append(x)});
+  const q=el("select");[["0.92","High quality"],["0.85","Balanced"],["0.7","Smaller file"]].forEach(([v,l])=>{const x=el("option",null,l);x.value=v;q.append(x)});
+  sz.setAttribute("aria-label","Size");q.setAttribute("aria-label","Quality");
+  let rot=0,flip=false;
+  const img=new Image();img.crossOrigin="anonymous";
+  const draw=(c,max)=>{
+    const w=img.naturalWidth,h=img.naturalHeight,sw=rot%180!==0,ow=sw?h:w,oh=sw?w:h;
+    const k=max&&Math.max(ow,oh)>max?max/Math.max(ow,oh):1;
+    c.width=Math.round(ow*k);c.height=Math.round(oh*k);
+    const x=c.getContext("2d");x.save();x.translate(c.width/2,c.height/2);x.rotate(rot*Math.PI/180);if(flip)x.scale(-1,1);
+    x.drawImage(img,-w*k/2,-h*k/2,w*k,h*k);x.restore();
+  };
+  const redraw=()=>draw(canvas,1100);
+  o.append(btn("Rotate left",()=>{rot=(rot+270)%360;redraw()}),btn("Rotate right",()=>{rot=(rot+90)%360;redraw()}),btn("Flip",()=>{flip=!flip;redraw()}),sz);
+  if(mime!=="image/png")o.append(q);
+  const bt=el("div","bt"),c=el("button","btn","Cancel"),s=el("button","btn pri","Save changes");c.type=s.type="button";bt.append(c,s);
+  d.append(cv,o,bt);ov.append(d);document.body.append(ov);
+  const close=()=>{document.removeEventListener("keydown",kd);ov.remove()},kd=e=>{if(e.key==="Escape")close()};
+  document.addEventListener("keydown",kd);c.onclick=close;
+  img.onload=redraw;img.onerror=()=>{close();toast("Could not load this image for editing.",1)};
+  img.src=rawUrl(f);
+  s.onclick=async()=>{
+    if(!rot&&!flip&&sz.value==="0"&&q.value==="0.92"&&mime==="image/png"){close();return}
+    close();
+    await run("Saving image…",async()=>{
+      const out=document.createElement("canvas");draw(out,+sz.value);
+      const blob=await new Promise(r=>out.toBlob(r,mime,+q.value));
+      if(!blob)throw new Error("Could not export the edited image.");
+      const sha=await mkBlob(await toB64(blob));
+      await commit([{path:f.path,sha}],`Edit image ${n}`);
+    })&&ok("Image updated");
+  };
+}
+
+/* ---------- connect / session ---------- */
+async function connect(auto){
+  const [o,r]=$("repo").value.trim().split("/");
+  if(!o||!r){$("err").textContent="Enter the repository as owner/name.";return}
+  S.owner=o;S.repo=r;S.branch=$("branch").value.trim()||"main";S.token=$("tok").value.trim();
+  $("err").textContent="";$("go").disabled=true;
+  try{
+    const info=await api("");
+    if(info.permissions&&!info.permissions.push)throw new Error("This token can read the repository but cannot write to it. Give it Contents: Read and write.");
+    await loadTree();
+    try{localStorage.setItem("adm_cfg",JSON.stringify({repo:$("repo").value.trim(),branch:S.branch}))}catch(e){}
+    const store=$("rem").checked?localStorage:sessionStorage;
+    try{localStorage.removeItem("adm_tok");sessionStorage.removeItem("adm_tok");store.setItem("adm_tok",S.token)}catch(e){}
+    $("login").hidden=true;$("app").hidden=false;
+    $("rinfo").textContent=`${S.owner}/${S.repo} on ${S.branch}`;
+    $("site").href=`https://${S.owner}.github.io/${S.repo}/`;
+    render();
+  }catch(e){
+    $("err").textContent=e.message;
+    if(auto){sessionStorage.removeItem("adm_tok");localStorage.removeItem("adm_tok")}
+  }finally{$("go").disabled=false}
+}
+$("lf").onsubmit=e=>{e.preventDefault();connect(false)};
+$("logout").onclick=()=>{try{localStorage.removeItem("adm_tok");sessionStorage.removeItem("adm_tok")}catch(e){}S.token="";$("tok").value="";$("app").hidden=true;$("login").hidden=false};
+$("refresh").onclick=()=>run("Refreshing…",()=>loadTree());
+$("newdir").onclick=newFolder;
+$("up").onclick=()=>$("file").click();
+$("file").onchange=e=>{upload(e.target.files);e.target.value=""};
+$("all").onchange=e=>{const {dirs,files}=listing();S.sel.clear();if(e.target.checked){dirs.forEach(d=>S.sel.add("d|"+d.path));files.forEach(f=>S.sel.add("f|"+f.path))}render()};
+$("bmove").onclick=()=>move(selItems());
+$("bdel").onclick=()=>del(selItems());
+$("bclr").onclick=()=>{S.sel.clear();render()};
+const dz=$("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over")}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();if(ev==="drop"||e.target===dz)dz.classList.remove("over")}));
+dz.addEventListener("drop",e=>{if(e.dataTransfer.files.length)upload(e.dataTransfer.files)});
+addEventListener("dragover",e=>e.preventDefault());addEventListener("drop",e=>e.preventDefault());
+
+(function init(){
+  try{const c=JSON.parse(localStorage.getItem("adm_cfg")||"null");if(c){$("repo").value=c.repo;$("branch").value=c.branch}}catch(e){}
+  const t=localStorage.getItem("adm_tok")||sessionStorage.getItem("adm_tok");
+  if(t){$("tok").value=t;$("rem").checked=!!localStorage.getItem("adm_tok");connect(true)}
+})();
+</script>
+</body>
+</html>
